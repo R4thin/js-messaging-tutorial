@@ -1,0 +1,45 @@
+<html>
+<head>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<script src="sinch.min.js"></script>
+</head>
+
+<body>       
+    <div id="auth">
+        <form>
+            <input id="username" placeholder="username">
+            <input id="password" type="password" placeholder="password">
+            <button id="loginUser">Login</button>
+            <button id="createUser">Sign Up</button>
+        </form> 
+    </div>
+
+    <form id="pickRecipient" style="display:none;">
+        <input id="recipient" placeholder="recipient">
+        <button id="pickRecipient">Chat</button>
+    </form>
+
+    <div id="chat" style="display:none;">
+        <div id="userInfo">
+            Logged in as: <span id="username"></span><br>
+            Chatting with: <span id="recipient"></span>
+        </div>
+
+        <form id="newMessage">
+            <input id="message" placeholder="message">
+            <button id="sendMsg">Send</button>
+        </form>
+
+        <div id="chatArea"></div>
+    </div>
+
+    <div class="error"></div>
+</body>
+
+<script src="index.js"></script>
+
+</html>
+
+
+
+
