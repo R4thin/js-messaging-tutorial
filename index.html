@@ -1,0 +1,344 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+        <title>Sinch Javascript Instant Messaging Tutorial</title>
+        <link rel="stylesheet" type="text/css" href="index.css">
+        <link rel="stylesheet" type="text/css" href="http://tutorial.sinch.com/index.css">
+        <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/styles/github.min.css">
+        
+        <script>
+          (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+          })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+          ga('create', 'UA-50667467-2', 'auto');
+          ga('send', 'pageview');
+        </script>     
+                        
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script>
+    </head>
+    
+    <body>
+        <div id="sidebar">
+            <a href="http://www.sinch.com"><img id=logo src="http://tutorial.sinch.com/logo.png" /></a>
+
+            <div id="sinch-signup">
+                <div id="mailing-list-text">Would you like to hear<br/> about future tuturials?</div>              
+                <a href="http://www.sinch.com/dashboard/#/signup" id="sinch-signup-button" target="_blank">YES!</a>
+            </div>
+
+            <div class="sections">
+                <a href="#h2-setup">Setup</a><br/>
+                <a href="#h2-signup-login">User Authentication</a><br/>
+                <a href="#h2-errors">Handling Errors</a><br/>
+                <a href="#h2-pick-recipient">Pick Recipient</a><br/>
+                <a href="#h2-send-messages">Send Messages</a><br/>
+                <a href="#h2-incoming-messages">Incoming Messages</a><br/>
+            </div>
+
+            <div id="tweet">
+            Questions?
+            <a href="https://twitter.com/intent/tweet?screen_name=SinchDev&text=I%20have%20a%20question%20about%20your%20Android%20messaging%20tutorial!" class="twitter-mention-button" data-related="SinchDev">Tweet to @SinchDev</a>
+        <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script></div>
+        </div>
+        
+        <div id="wrapper">
+            <h1>Use the Sinch Javascript SDK to Build a Messaging App</h1>
+
+            <p>In this tutorial, you will build a bare bones instant messaging web app. You will gain a solid understanding of how to use the Sinch Javascript SDK for messaging, as well a starting place for building a highly customized instant messaging solution in your web app.</p>
+
+            <p>Your app will work like this:</p>
+
+            <p><img src="images/app-flow.png" id="app-flow" /></p>
+
+            <p>First, users will either login or sign up. Then, they will be prompted to type the username of the person they want to chat with. Finally, they enter a chat room with the specified recipient.</p>
+
+            <h2 id="h2-setup">Setup</h2>
+
+            <p>Start by creating a few empty files to work in:</p>
+
+            <ul>
+                <li>index.html</li>
+                <li>index.js</li>
+            </ul>
+
+            <p>In the <strong>index.html</strong> header, include jquery:</p>
+
+            <pre><code>&lt;script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"&gt;
+&lt;/script&gt;</code></pre>
+
+            <p>Also add a script tag after the closing body tag that runs <strong>index.js</strong>:</p>
+
+            <pre><code>&lt;script src="index.js"&gt;&lt;/script&gt;</code></pre>
+
+            <p>Lastly, you will need to set up the Sinch SDK. Download it from <a href="http://www.sinch.com/js-sdk">www.sinch.com/js-sdk</a>. Inside the main folder, you will find <strong>sinch.min.js</strong>. Move this file into the root of your project directory, and include it in the head of <strong>index.html</strong>:</p>
+
+            <pre><code>&lt;script src="sinch.min.js"&gt;&lt;/script&gt;</code></pre>
+
+            <p>To generate an app key and secret, you need to sign up for a Sinch account at <a href="http://www.sinch.com/dashboard/#/signup">www.sinch.com/signup</a>. Once you are logged into your developer dashboard, click <strong>Apps</strong> on the left-hand side, then click the purple <strong>Create New App</strong> button on the right.</p>
+
+            <p><img src="images/create-new-app-button.png" id="create-new-app-button" /></p>
+
+            <p>You will be prompted to name your app, along with some other fields. You only need to name your app (anything you want), and click <strong>Create</strong>.</p>
+
+            <p><img src="images/create-new-app-form.png" id="create-new-app-form" /></p>
+
+            <p>For this tutorial, you will only need your app key. You can get that by clicking on the keys icon to the right of the name of your app.</p>
+
+            <h2 id="h2-signup-login">Signup and Login</h2>
+
+            <p>The first thing your users should see is a signup/login form. Begin by defining this in <strong>index.html</strong>:</p>
+
+            <pre><code>&lt;div id="auth"&gt;
+    &lt;form&gt;
+        &lt;input id="username" placeholder="username"&gt;
+        &lt;input id="password" type="password" placeholder="password"&gt;
+        &lt;button id="loginUser"&gt;Login&lt;/button&gt;
+        &lt;button id="createUser"&gt;Sign Up&lt;/button&gt;
+    &lt;/form&gt; 
+&lt;/div&gt;</code></pre>
+
+            <p>Here is some pseudocode to give you an idea of what the login with Sinch will look like in <strong>index.js</strong>:</p>
+
+            <pre><code class="java">var global_username = '';
+var global_recipient = '';
+
+//start an instance of SinchClient
+
+$('button#createUser').on('click', function(event) {
+    //don't submit the form (preventDefault)
+    //disable buttons while logging in user  
+    //get username &amp; password from form
+
+    //register new user with sinchClient
+        //success: login user
+            //success: prompt to pick recipient
+            //fail: display error message
+        //fail: display error message
+
+});
+
+$('button#loginUser').on('click', function(event) {
+    //don't submit the form (preventDefault)
+    //disable buttons while logging in user  
+    //get username &amp; password from form
+
+    //login user
+        //success: prompt to pick recipient
+        //fail: display error message
+});</code></pre>
+
+            <p>To start an instance of SinchClient, use your application key, and specify that your app will be using the messaging feature:</p>
+
+            <pre><code>sinchClient = new SinchClient({
+    applicationKey: 'your-app-key',
+    capabilities: {messaging: true},
+});</code></pre>
+
+            <p>You will start the sinchClient when logging in a user. First though, you need to handle a user that wants to sign up. The following code snippet will prevent the form from being submitted, disable signup/login buttons while signing up/logging in a user, and get the username and password from the form fields. You can use this in button#createUser click and button#loginUser click:</p>
+
+            <pre><code>event.preventDefault();
+$('button#createUser').attr('disabled', true);
+$('button#loginUser').attr('disabled', true);</code></pre>
+
+            <p>Then, get the user's username and password from the signup/login form:</p>
+
+            <pre><code>var username = $('input#username').val();
+var password = $('input#password').val();</code></pre>
+
+            <p>To register a new user with your app, use:</p>
+
+            <pre><code>var loginObject = {username: username, password: password};
+sinchClient.newUser(loginObject, function(ticket) {
+    //On success, login user   
+}).fail(handleError);</code></pre>
+
+            <p>For now, just create an empty handleError function. I'll cover this in the next section:</p>
+
+            <pre><code>var handleError = function(error) {}</code></pre>
+
+            <p>To log a user into your app (use this in button#createUser and button#loginUser):</p>
+
+            <pre><code>sinchClient.start({username: username, password: password}, function() {
+    global_username = username;
+    console.log("Logged in!");
+ }).fail(handleError);</code></pre>
+
+            <p>Try signing up and logging in now to make sure that both buttons produce a "Logged in!" in the console.</p>
+
+            <p>Note: To keep this tutorial simple, this app has no concept of user sessions. To logout, just reload the page.</p>
+
+            <h2 id="h2-errors">Handle and Display Errors</h2>
+
+            <p>If there is an error when logging in, signing up, or sending a message, you will want to display the error message. In <strong>index.html</strong>, create an empty div to display error messages:</p>
+
+            <pre><code>&lt;div class="error"&gt;&lt;/div&gt;</code></pre>
+
+            <p>In <strong>handleError</strong>, you should enable the signup/login buttons (because they get disabled in button#createUser and button#loginUser), and display the error message from your sinchClient:</p>
+
+            <pre><code>$('button#createUser').attr('disabled', false);
+$('button#loginUser').attr('disabled', false);
+$('div.error').text(error.message);</code></pre>
+
+            <p>To test displaying errors, the easiest thing to do is to try logging in as a user that doesn't exist. You should see the error "40108 Invalid Credentials" displayed in your error div. Now that your app can display errors, you should also have a method to clear the error div:</p>
+
+            <pre><code>var clearError = function() {
+    $('div.error').text("");
+}</code></pre>
+
+            <p>You'll want to call clearError at the beginning of button#createUser click and button#loginUser click.</p>
+
+            <h2 id="h2-pick-recipient">Pick Recipient</h2>
+
+            <p>Upon a successful authentication, your app should hide div#auth, and display a form to submit the username of the person you want to chat with. Create this form (which should be hidden by default) in <strong>index.html</strong> below div#auth:</p>
+
+            <pre><code>&lt;form id="pickRecipient" style="display:none;"&gt;
+    &lt;input id="recipient" placeholder="recipient"&gt;
+    &lt;button id="pickRecipient"&gt;Chat&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+
+            <p>To handle the hiding and showing of divs upon login, define showPickRecipient:</p>
+
+            <pre><code>var showPickRecipient = function() {
+    $('div#auth').css('display', 'none');
+    $('form#pickRecipient').show();
+}</code></pre>
+
+            <p>And call showPickRecipient in both places where a user is logged in! Here is the completed code for button#createUser click and button#loginUser click:</p>
+
+            <pre><code>$('button#createUser').on('click', function(event) {
+    event.preventDefault();
+    $('button#createUser').attr('disabled', true);
+    $('button#loginUser').attr('disabled', true);
+    clearError();
+
+    var username = $('input#username').val();
+    var password = $('input#password').val();
+
+    var loginObject = {username: username, password: password};
+    sinchClient.newUser(loginObject, function(ticket) {
+        sinchClient.start(ticket, function() {
+            global_username = username;
+            showPickRecipient();
+        }).fail(handleError);
+    }).fail(handleError);
+});
+
+$('button#loginUser').on('click', function(event) {
+    event.preventDefault();
+    $('button#createUser').attr('disabled', true);
+    $('button#loginUser').attr('disabled', true);
+    clearError();
+
+    var username = $('input#username').val();
+    var password = $('input#password').val();
+
+    var loginObject = {username: username, password: password};
+    sinchClient.start(loginObject, function() {
+        global_username = username;
+        showPickRecipient();
+    }).fail(handleError);
+});</code></pre>
+
+            <p>Now that the pick recipient form is being shown, you should listen for a click on the submit button:</p>
+
+            <pre><code>$('button#pickRecipient').on('click', function(event) {
+    event.preventDefault();
+    clearError();
+    global_recipient = $('input#recipient').val();
+    //show the chat room!
+});</code></pre>
+
+            <p>Here is the html for the chat room (which, like form#pickRecipient, should be hidden by default). It displays the current user info, the recipient's username, a form to send a message, and an empty div that you will append messages to:</p>
+
+            <pre><code>&lt;div id="chat" style="display:none;"&gt;
+    &lt;div id="userInfo"&gt;
+        Logged in as: &lt;span id="username"&gt;&lt;/span&gt;&lt;br&gt;
+        Chatting with: &lt;span id="recipient"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+
+    &lt;form id="newMessage"&gt;
+        &lt;input id="message" placeholder="message"&gt;
+        &lt;button id="sendMsg"&gt;Send&lt;/button&gt;
+    &lt;/form&gt;
+
+    &lt;div id="chatArea"&gt;&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+
+            <p>To show the chat room and hide form#pickRecipient, define showChat:</p>
+
+            <pre><code>var showChat = function() {
+    $('form#pickRecipient').css('display', 'none');
+    $('div#chat').show();
+    //Fill the username and recipient "info text" with
+    //the current user and recipient
+    $('span#username').text(global_username);
+    $('span#recipient').text(global_recipient);
+}</code></pre>
+
+            <p>Now you can call showChat when the pickRecipient button is clicked.</p>
+
+            <h2 id="h2-send-messages">Send Messages</h2>
+
+            <p>You made it to the fun part - sending messages! First, you should listen for a click on the sendMessage button:</p>
+
+            <pre><code>$('button#sendMsg').on('click', function(event) {
+    //don't submit the form
+    event.preventDefault();
+
+    //clear any errors that from the auth process
+    clearError();
+});</code></pre>
+
+            <p>Inside the above method, you will also want to:</p>
+
+            <ol>
+                <li>Get the message from the form input box.</li>
+                <li>Clear the input box (makes it easy for the user to send the next message)</li>
+                <li>Create a message with the sinch message client</li>
+                <li>Use the sinch message client to send the message</li>
+            </ol>
+
+            <pre><code>//global variable
+var messageClient = sinchClient.getMessageClient();
+
+var text = $('input#message').val();
+$('input#message').val('');
+var sinchMessage = messageClient.newMessage(global_recipient, text);
+messageClient.send(sinchMessage).fail(handleError);</code></pre>
+
+            <p>Your app is ready to send messages! A few things that I should explain now - First, your app has no concept of user sessions right now, so you can be logged in as two different users in two different browser tabs. This makes testing quite easy! Second, you haven't yet written a way for your app to display the sent messages in the chat room, so don't be alarmed when you send a message and don't see any visual difference. I'll explain why in the next section.</p>
+
+            <h2 id="h2-incoming-messages">Listen for Incoming Messages</h2>
+
+            <p>In this section, you will learn how to add an event listener to messageClient to listen for incoming messages. The cool thing about the Sinch Javascript SDK is that for every message you send to a friend, you also send a copy of that message to yourself. That way, onIncomingMessage gets called once for every message you send and receive. To set up the skeleton of this event listener and add it the the message client:</p>
+
+            <pre><code>var eventListener = {
+    onIncomingMessage: function(message) {}        
+}
+
+messageClient.addEventListener(eventListener);</code></pre>
+
+            <p>Pretty simple, right? To display messages in onIncomingMessage, append a div with the message to the empty chat area div you created earlier in this tutorial.</p>
+
+            <pre><code>$('div#chatArea').append('&lt;div&gt;' + message.textBody + '&lt;/div&gt;');</code></pre>
+
+            <p>Now, you can log in to the messaging app as two different users in two different browser tabs and talk to each other! Unfortunately, your app doesn't yet have any visual difference between incoming and outgoing messages. You can set a text color on the message div depending on whether or not the sender id is equal to global_username:</p>
+
+            <pre><code>if (message.senderId == global_username) {
+    //outgoing
+    $('div#chatArea').append('&lt;div&gt;' + message.textBody + '&lt;/div&gt;');
+} else {
+    //incoming
+    $('div#chatArea').append('&lt;div style="color:red;"&gt;' 
+                            + message.textBody + '&lt;/div&gt;');
+}</code></pre>
+
+            <p>You're all done! Hopefully this tutorial gives you a good starting point for whatever exciting messaging app you are building. Build something neat? Share with us on Twitter <a href="http://www.twitter.com/sinchdev">@SinchDev</a>, or email us at <a href="mailto:hi@sinch.com">hi@sinch.com</a></p>
+        </div>
+    </body>
+</html>
