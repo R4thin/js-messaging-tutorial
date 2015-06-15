@@ -2,7 +2,7 @@ var global_username = '';
 var global_recipient = '';
 
 sinchClient = new SinchClient({
-	applicationKey: 'your-app-key',
+	applicationKey: 'c110582b-d6b1-4213-8542-ae5fd6e02a40',
 	capabilities: {messaging: true},
 });
 
